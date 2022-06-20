@@ -1,30 +1,41 @@
-//fetch les données en provenance du serveur et les place sur addProducts//
+//fetch les données en provenance du serveur et appeler addProducts//
 
 fetch("http://localhost:3000/api/products")
     .then((res) => res.json())
-    .then((data) => {
-        console.log(data)
-        return addProducts(data)
-    })
+    .then((data) => addProducts(data))
 
-//addProducts récupère les données
+//addProducts récupère les données du premier élément
 function addProducts(donnees) {
-    const id = donnees[0]._id
-    const imageUrl = donnees[0].imageUrl
-    const altTxt = donnees[0].altTxt
-    const name = donnees[0].name
-    const description = donnees[0].description
+    //const _id = donnees[0]._id
+    //const imageUrl = donnees[0].imageUrl
+    //const altTxt = donnees[0].altTxt
+    //const name = donnees[0].name
+    //const description = donnees[0].description
 
+
+    // on va loop les données avec forEach afin de recuperer les données de chaque produits
+    donnees.forEach((canape) => {
+    
+
+    const {_id, imageUrl, altTxt, name, description} = canape
+    const anchor = createAnchor(_id)
+    const article = document.createElement("article")
     const image = createImage(imageUrl, altTxt)
-
-    const anchor = createAnchor(id)
-    const article = createArticle()
     const h3 = createTitle(name)
     const p = createP(description)
-    article.appendChild(image)
-    article.appendChild(h3)
-    article.appendChild(p)
-    appendChildren(anchor, article)   
+    
+    appendElementsToArticle (article, [image, h3, p])
+    appendArticleToAnchor(anchor, article)  
+    });
+}
+
+function appendElementsToArticle (article, array) {
+    array.forEach((item) => {
+        article.appendChild(item)
+    })
+    //article.appendChild(image)
+    //article.appendChild(h3)
+    //article.appendChild(p)
 }
 
 function createAnchor(id){
@@ -33,20 +44,13 @@ function createAnchor(id){
     return anchor
 }
 
-//appendChildren va chercher l'id items et si le resultat est different de null il applique anchor//
-function appendChildren(anchor, article) {
+//appendChildren va chercher l'id items et si le resultat est different de null il applique sur anchor//
+function appendArticleToAnchor(anchor, article) {
     const items = document.querySelector("#items")
     if (items != null) {
         items.appendChild(anchor)
         anchor.appendChild(article)
         }
-}
-
-function createArticle () {
-    const article = document.createElement("article")
-    //article.appendChild(title)
-    //article.appendChild(paragraph)
-    return article
 }
 
 function createImage (imageUrl, altTxt) {
