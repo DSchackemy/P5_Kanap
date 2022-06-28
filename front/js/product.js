@@ -3,7 +3,9 @@
 const queryString = window.location.search
 const urlParams = new URLSearchParams(queryString)
 const productID = urlParams.get("id")
-
+let imgUrl, altText
+let itemPrice
+let id
 
 //on recupère les données des produits
 
@@ -20,6 +22,9 @@ function Data(canape) {
     //const price = canape.price
     //const _id = canape._id
     const {altTxt, colors, description, imageUrl, name, price,} = canape
+    imgUrl = imageUrl
+    altText = altTxt
+    itemPrice = price
     createImage (imageUrl, altTxt)
     createTitle (name)
     createPrice (price)
@@ -43,6 +48,7 @@ function createTitle(name) {
 function createPrice(price) {
     const span = document.querySelector("#price")
     if (span != null) span.textContent = price
+    
 }
 
 function createDescription(description) {
@@ -63,3 +69,42 @@ function createColors(colors){
     }
 }
 
+const button = document.querySelector("#addToCart")
+if (button != null) {
+    button.addEventListener("click", handleClick)
+}
+function handleClick () {
+        const color = document.querySelector("#colors").value
+        const quantity = document.querySelector("#quantity").value
+
+        //on verifie que les valeur saisie sont juste sinon message alert
+        if (isOrderInvalid(color, quantity)) return
+
+        saveOrder(color, quantity)
+        //on redirige vers le panier
+        redirectToCart()
+
+}
+//fonction de verification de la commande
+function isOrderInvalid(color, quantity) {
+    if (color == null || color == "" || quantity == null || quantity == 0) {
+        alert ("Veuillez selectionner une couleur et une quantité")
+        return true
+    }
+}
+
+function saveOrder (color, quantity) {
+    const data = {
+        id: id,
+        color: color,
+        quantity: quantity,
+        price: itemPrice,
+        imageUrl : imgUrl,
+        altTxT: altText
+    }
+    localStorage.setItem(id, JSON.stringify(data))
+}
+//fonction de redirection
+function redirectToCart() {
+    window.location.href = "cart.html"
+}
