@@ -3,7 +3,7 @@
 const queryString = window.location.search
 const urlParams = new URLSearchParams(queryString)
 const productID = urlParams.get("id")
-let imgUrl, altText
+let imgUrl, altText, artName
 let itemPrice
 let id
 
@@ -25,6 +25,7 @@ function Data(canape) {
     imgUrl = imageUrl
     altText = altTxt
     itemPrice = price
+    artName = name
     createImage (imageUrl, altTxt)
     createTitle (name)
     createPrice (price)
@@ -100,7 +101,8 @@ function saveOrder (color, quantity) {
         quantity: quantity,
         price: itemPrice,
         imageUrl : imgUrl,
-        altTxT: altText
+        altTxT: altText,
+        name: artName,
     }
     localStorage.setItem(id, JSON.stringify(data))
 }
