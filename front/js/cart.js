@@ -6,7 +6,7 @@ cart.forEach(item => displayItem(item))
 function searchItem () {
     const numberOfItems = localStorage.length
     for(let i = 0;i < numberOfItems; i++) {
-        const item = localStorage.getItem(localStorage.key(i))
+        const item = localStorage.getItem(localStorage.key(i)) || ""
         const itemObject = JSON.parse(item)
         cart.push(itemObject)
     }
@@ -17,17 +17,25 @@ function displayItem(item) {
     const div = createImage(item)
     article.appendChild(div)
 
-    const cartItemContent = createDescription (div, item)
-    article.appendChild(cartItemContent)
+const cartItemCcontent = createCartContent (item)
+article.appendChild(cartItemCcontent)
     displayArticle(article)
 }
 
-function createCartItemContent() {
-    const div = document.createElement("div")
-    div.classList.add("cart__item__content")   
+function createCartContent(item) {
+    const cartItemContent = document.createElement("div")
+    cartItemContent.classList.add("cart__item__content")
+
+    const description = createDescription(item)
+    const settings = createSettings(item)
+
+    cartItemContent.appendChild(description)
+    cartItemContent.appendChild(settings)
+    return cartItemContent
+
 }
 
-function createDescription(div, item) {
+function createDescription (item) {
     const description = document.createElement("div")
     description.classList.add("cart__item__content__description")
 
@@ -43,8 +51,43 @@ function createDescription(div, item) {
     description.appendChild(h2)
     description.appendChild(p)
     description.appendChild(p2)
-    div.appendChild(description)
-    return div
+    return description
+}
+
+function createSettings (item) {
+    const settings = document.createElement("div")
+    settings.classList.add("cart__item__content__settings")
+
+    addQuantityToSettings(settings,item)
+    addDeleToSettings(settings, item)
+    return settings
+}
+
+function addQuantityToSettings(settings, item) {
+    const quantity = document.createElement("div")
+    settings.classList.add("cart__item__content__settings__quantity")
+
+    const p = document.createElement("p")
+    p.textContent = "Qté : "
+    quantity.appendChild(p)
+
+    const input = document.createElement("input")
+    input.type = "number"
+    input.classList.add("itemQuantity")
+    input.name = "itemQuantity"
+    input.min = "1"
+    input.max = "100"
+    input.value = item.quantity
+    settings.appendChild(input)
+}
+
+function addDeleToSettings(settings, item) {
+    const div = document.createElement("div")
+    div.classList.add("cart__item__content__settings__delete")
+    const p = document.createElement("p")
+    p.textContent = "Supprimer"
+    div.appendChild(p)
+    settings.appendChild(div)
 }
 
 function displayArticle (article) {
