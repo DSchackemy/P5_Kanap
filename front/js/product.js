@@ -2,14 +2,11 @@
 
 const queryString = window.location.search
 const urlParams = new URLSearchParams(queryString)
-const productID = urlParams.get("id")
-let imgUrl, altText, artName
-let itemPrice
-let id
+const id = urlParams.get("id")
 
-//on recupère les données des produits
+//on recupère les données des produits dans l'API
 
-fetch(`http://localhost:3000/api/products/${productID}`)
+fetch(`http://localhost:3000/api/products/${id}`)
 .then((res) => res.json())
 .then (res => Data(res))
 
@@ -32,7 +29,7 @@ function Data(canape) {
     createDescription(description)
     createColors(colors)
 }
-
+//insertion de l'image 
 function createImage(imageUrl, altTxt) {
     const image = document.createElement("img")
     image.src = imageUrl
@@ -40,23 +37,23 @@ function createImage(imageUrl, altTxt) {
     const parent = document.querySelector(".item__img")
     if (parent != null) parent.appendChild(image)
 }
-
+//insertion du h1
 function createTitle(name) {
     const h1 = document.querySelector("#title")
     if (h1 != null) h1.textContent = name
 }
-
+//insertion du prix
 function createPrice(price) {
     const span = document.querySelector("#price")
     if (span != null) span.textContent = price
     
 }
-
+//insertion de la description
 function createDescription(description) {
     const p = document.querySelector("#description")
     if (p != null) p.textContent = description
 }
-
+//insertion de la couleur
 function createColors(colors){
     const select = document.querySelector("#colors")
     if (select != null) {
@@ -86,25 +83,26 @@ function handleClick () {
         redirectToCart()
 
 }
-//fonction de verification de la commande
+//fonction de verification de la commande avec apparition d'une pop-up au cas ou le choix est invalide
 function isOrderInvalid(color, quantity) {
     if (color == null || color == "" || quantity == null || quantity == 0) {
         alert ("Veuillez selectionner une couleur et une quantité")
         return true
     }
 }
-
+//fonction de sauvegarde du choix produit dans le localStorage
 function saveOrder (color, quantity) {
+    const key = `${id}-${color}`
     const data = {
         id: id,
         color: color,
-        quantity: quantity,
+        quantity: Number(quantity),
         price: itemPrice,
         imageUrl : imgUrl,
         altTxT: altText,
         name: artName,
     }
-    localStorage.setItem(id, JSON.stringify(data))
+    localStorage.setItem(key, JSON.stringify(data))
 }
 //fonction de redirection
 function redirectToCart() {
