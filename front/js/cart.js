@@ -155,6 +155,9 @@ function deleteItem(item) {
     displayTotalQuantity()
     deleteData(item)
     deleteArticle(item)
+    //Alerte produit supprimé et refresh
+    alert("Ce produit a bien été supprimé du panier");
+    location.reload();
 }
 //on supprime la donnée du localStorage
 function deleteData(item){

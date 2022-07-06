@@ -106,5 +106,6 @@ function saveOrder (color, quantity) {
 }
 //fonction de redirection
 function redirectToCart() {
+    alert ("vos produits sont ajoutés au panier, cliquez sur Ok pour le consulter")
     window.location.href = "cart.html"
 }
