@@ -1,142 +1,132 @@
-//on va rechercher l'id de chaque produit
+const API_ROOT = 'http://localhost:3000/api';
 
-const queryString = window.location.search
-const urlParams = new URLSearchParams(queryString)
-const id = urlParams.get("id")
+//on recupère l'ID du produit depuis l'URL
+const productId = new URLSearchParams(window.location.search).get('id');
 
-const quantityPicked = document.querySelector("#quantity")
-const colorPicked = document.querySelector("#color")
-
-//on recupère les données des produits dans l'API
-
-fetch(`http://localhost:3000/api/products/${id}`)
-.then((res) => res.json())
-.then (res => Data(res))
-
-function Data(canape) {
-    const {altTxt, colors, description, imageUrl, name, price,} = canape
-    imgUrl = imageUrl
-    altText = altTxt
-    itemPrice = price
-    artName = name
-    createImage (imageUrl, altTxt)
-    createTitle (name)
-    createPrice (price)
-    createDescription(description)
-    createColors(colors)
-
-    addToCart(canape)
+function getAllProducts(showDescription) {
+    fetch(`${API_ROOT}/products/${productId}`)
+    .then(response => response.json())
+    .then(item => {
+        document.title = item.name;
+        showDescription(item);
+    })
 }
-//On Ajoute au panier
-function addToCart(canape) {
-    const sendToCart = document.querySelector("#addToCart");
 
-    // verification conditions 
-    sendToCart.addEventListener("click", (event) => {
-        if (quantityPicked.value > 0  && quantityPicked <= 100) {
-            
-            // choix de la quantité
-            let choixQuantity = quantityPicked.value;
-
-            //choix de la couleur
-            let choixColor = colorPicked.value;
+getAllProducts(showCanapeInformation);
 
 
-            let productSettings = {
-                idProduct : id,
-                colorProduct : choixColor,
-                quantityProduct : +choixQuantity,
-                nameProduct : canape.name,
-                prixProduct : canape.price,
-                descriptionProduct : canape.description,
-                imgProduct : canape.imageUrl,
-                altImg : canape.altTxt,
-            };
+// on insere le produit depuis l'API
+function showCanapeInformation (item) {
+    //product container
+    const itemImg = document.querySelector('.item__img');
 
-            //Initialisation du localStorage
-            let productInLocalStorage = JSON.parse(localStorage.getItem(canape));
+    // insertion de l'image
+    const itemCardImage = document.createElement('img');
+    itemCardImage.setAttribute('src', `${item.imageUrl}`);
+    itemCardImage.setAttribute('alt', `${item.altTxt}` )
+    itemImg.appendChild(itemCardImage);
 
-            //ouverture pop-up de confirmation
-            const popupConfirmation = () => {
-                if (
-                window.confirm(`Votre commande de ${choixQuantity} ${canape.name} ${choixColor} est ajoutée au panier
-            Pour consulter votre panier, cliquez sur OK`)
-                ) {
-                window.location.href = "cart.html";
-                }
-            };
+    // insertion du titre
+    const title = document.getElementById('title');
+    title.innerText = `${item.name}`;
+    
+    //insertion du prix
+    const price = document.getElementById('price');
+    price.innerText = `${item.price}`;
 
-            //importation dans le localStorage
+    //insertion de la description description
+    const description = document.getElementById('description');
+    description.innerText = `${item.description}`;
 
-                // Si panier avec au moins un article
-            if (productInLocalStorage) {
-                const productFind = productInLocalStorage.find (
-                    (el) =>
-                    el.id === id && el.colorProduct === choixColor
-                );
+    //insetion du champs couleur
+    const colors = document.getElementById('colors');
 
-                //si le produit commandé deja présent
-            if (productFind) {
-                let newQuantity =
-                    parseInt(productSettings.quantityProduct) +
-                    parseInt(productFind.quantityProduct);
-                    productFind.quantityProduct = newQuantity;
-            localStorage.setItem(canape, JSON.stringify(productInLocalStorage));
-            popupConfirmation();
-            
-            // si produit pas dans le panier
-            }else{
-                productInLocalStorage.push(productSettings);
-                localStorage.setItem(canape, JSON.stringify(productInLocalStorage));
-                popupConfirmation();
-            }
-            //Si panier est vide
-            }else {
-                productInLocalStorage = [];
-                productInLocalStorage.push(productSettings);
-                localStorage.setItem(canape, JSON.stringify(productInLocalStorage));
-                popupConfirmation();
-            }
+    /**
+     * options pour le champ de selection
+     * @param {Object} item 
+     * @param {HTMLElement} colors 
+     */
+    createOptions(item, colors);
+    
+    //on ajoute au panier
+    addEventListenerOnAddToCartBtn();
+
+}
+
+//fonction du champ de selection pour la couleur
+function createOptions(item, select) {
+    for(let op = 0; op < item.colors.length; op++) {
+        const option = document.createElement('option');
+        option.setAttribute('value', `${item.colors[op]}`);
+        option.innerText = `${item.colors[op]}`;
+        select.appendChild(option)
+    }
+}
+
+
+
+//fonction de l'event listenner sur le clic du bouton ajouter au panier
+function addEventListenerOnAddToCartBtn() {
+    const btn = document.getElementById('addToCart');
+    const quantityInput = document.getElementById('quantity');
+    const selectBox = document.getElementById('colors');
+
+    btn.addEventListener('click', () => {
+        const item = {"id":productId, "color": colors.value, "quantity" : parseInt(quantityInput.value)};
+        // si la selection est valide on ajoute au panier et redirige vers la page panier
+        if(isItemValid(item)) {
+            addToCart(item);
+            alert('Votre commande a été bien prise en compte ! ');
+            quantityInput.value = 0;
+            selectBox.selectedIndex = 0;
+            redirectToCart ()
+        } else {
+            alert('Veuillez selectionner une couleur et une quantité comprise entre 1 et 100');
         }
     })
 }
 
+// fonction qui verifie si la selection est correcte
+function isItemValid(item) {
+    const selectBox = document.getElementById('colors');
 
-//insertion de l'image 
-function createImage(imageUrl, altTxt) {
-    const image = document.createElement("img")
-    image.src = imageUrl
-    image.alt = altTxt
-    const parent = document.querySelector(".item__img")
-    if (parent != null) parent.appendChild(image)
+return selectBox.selectedIndex != 0 && Number.isInteger(item.quantity) && item.quantity > 0 && item.quantity < 101;
 }
-//insertion du h1
-function createTitle(name) {
-    const h1 = document.querySelector("#title")
-    if (h1 != null) h1.textContent = name
+
+// function qui ajoute l'objet au panier
+function saveItems(items) {
+localStorage.setItem('items', JSON.stringify(items));
 }
-//insertion du prix
-function createPrice(price) {
-    const span = document.querySelector("#price")
-    if (span != null) span.textContent = price
-    
-}
-//insertion de la description
-function createDescription(description) {
-    const p = document.querySelector("#description")
-    if (p != null) p.textContent = description
-}
-//insertion de la couleur
-function createColors(colors){
-    const select = document.querySelector("#colors")
-    if (select != null) {
-        // on crée une loop afin de recuperer les infos pour chaque couleurs 
-        colors.forEach((color) => {
-            const option = document.createElement("option")
-            option.value = color
-            option.textContent = color
-            select.appendChild(option)
-        })
+
+// si le panier est vide, une array est crée
+function getAllItems() {
+    let items = localStorage.getItem('items');
+    if (items == null) {
+        return [];
     }
+
+    return JSON.parse(items);
 }
 
+// SI dans le panier un objet avec le meme id et couleur existe, sa quantité change
+// sinon on ajoute l'objet au panier
+function addToCart(item) {
+    let listOfProducts = getAllItems();
+    
+    let itemExists = listOfProducts.find(element => {
+        return element.id == item.id && element.color == item.color;
+    });
+
+    if(itemExists === undefined) {
+        listOfProducts.push(item)
+    } else {
+        itemExists.quantity += item.quantity;
+    }
+
+    //sauvegarde le parnier après modification dans le local storage
+    saveItems(listOfProducts);
+}
+
+function redirectToCart () {
+    window.location.href = "cart.html";
+}
