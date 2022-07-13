@@ -105,33 +105,46 @@ function createProductInBasket(product) {
     const cartItemDescription = document.createElement('div');
     cartItemDescription.classList.add('cart__item__content__description');
     cartItemContent.appendChild(cartItemDescription);
+    
+    
     //cart__item__content__description ----- tags
     //h3
     const cartItemTitle = document.createElement('h2');
     cartItemTitle.innerText = product.name;
     cartItemDescription.appendChild(cartItemTitle);
+    
+    
     //p color
     const cartItemColor = document.createElement('p');
     cartItemColor.innerText = product.color;
     cartItemDescription.appendChild(cartItemColor);
+    
+    
     //p price
     const cartItemPrice = document.createElement('p');
     cartItemPrice.classList.add('cart__item__content__price');
     cartItemPrice.innerText = `${product.price}€`;
     cartItemDescription.appendChild(cartItemPrice);
     
+    
     //div  cart__item__content__settings
     const cartItemSettings = document.createElement('div');
     cartItemSettings.classList.add('cart__item__content__settings');
     cartItemContent.appendChild(cartItemSettings);
+    
+    
     // div quantity
     const cartItemQuantity = document.createElement('div');
     cartItemQuantity.classList.add('cart__item__content__settings__quantity');
     cartItemSettings.appendChild(cartItemQuantity);
+    
+    
     // p quantité
     const cartItemQuantityLabel = document.createElement('p');
     cartItemQuantityLabel.innerText = "Qté : ";
     cartItemQuantity.appendChild(cartItemQuantityLabel);
+    
+    
     //input quantity
     const cartItemQuantityInput = document.createElement('input');
     cartItemQuantityInput.classList.add('itemQuantity');
@@ -143,10 +156,14 @@ function createProductInBasket(product) {
     "value" : product.quantity
     })
     cartItemQuantity.appendChild(cartItemQuantityInput);
+    
+    
     // div delete button
     const cartItemDelete = document.createElement('div');
     cartItemDelete.classList.add('cart__item__content__settings__delete');
     cartItemSettings.appendChild(cartItemDelete);
+    
+    
     //p delete
     const cartItemDeleteBth = document.createElement('p');
     cartItemDeleteBth.classList.add("deleteItem")
@@ -231,3 +248,129 @@ function deleteItemFromTheCart(deleteBtn, cartItems, section, article) {
         })
     }
 };
+
+//Formulaire
+
+// Creation de regEx ( expression régulière) pour les champs email, adresse et noms
+const emailFormat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+const nameFormat = /^[a-zA-Z][^0-9!?@#$%^&*)(':;=+/]{1,15}$/;
+const adressFormat = /^[0-9]+,* *[a-zA-Z][^0-9]*$/;
+
+// On recupère les valeurs provenant des entrrées du formulaire
+const firstName = document.getElementById('firstName');
+const lastName = document.getElementById('lastName');
+const address = document.getElementById('address');
+const city = document.getElementById('city');
+const email = document.getElementById('email');
+const form = document.querySelector('.cart__order__form');
+
+
+// Valadation du formulaire et si toute les données sont valides, on crée un objet qui contient les données demandé a l'API
+function isValidForm(form) {
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (validName(firstName)&& validName(lastName) && validAdress(address) && validName(city) && validEmail(email)) {
+            const requestedData = {
+                contact: {
+                    firstName,
+                    lastName,
+                    address,
+                    city,
+                    email
+                },
+                products: []
+            };
+
+            const localProducts = getItemsLocalStorage();
+            
+            // obtenir les identifiants de tous les produits du panier et les ajouter à l'array requestsData.products
+            if (localProducts != null) {
+                for (let i = 0; i < localProducts.length; i++) {
+                    requestedData.products.push(localProducts[i].id)
+                }
+            };
+            // on insère l'objet requestedData.contact avec les informations de contact
+            requestedData.contact.firstName =  firstName.value;
+            requestedData.contact.lastName = lastName.value;
+            requestedData.contact.address = address.value;
+            requestedData.contact.city = city.value;
+            requestedData.contact.email = email.value;
+            
+
+            // POST des informations de commande à l'API, on recupère l'ID de commande et redirige vers la page confirmation 
+            // Si le panier est vide, on affiche une alerte d'erreur
+            if (localProducts == null || localProducts.length === 0) {
+                alert("Veuillez choisir des produits, votre panier est vide");
+            } else {
+                postInformationToApiAndShowOrderNumber(requestedData)
+            }
+        }
+        else {
+            return false;
+        }
+    })
+}
+
+isValidForm(form);
+
+// validation des entrées dans le formulaire
+const validName = function (inputName) {
+    
+    //création de la regex pour la validation de nom, prenom et ville
+    const nameFormat = /^[a-zA-Z][^0-9!?@#$%^&*)(':;=+/]{1,15}$/;
+    if (inputName.value.match(nameFormat)) {
+        inputName.nextElementSibling.innerText = "";
+        return true;
+    } else {
+        alert("Votre nom n'est pas valide");
+        return false;
+    }
+}
+
+// validation de l'adresse (le numéro de rue est obligatoire)
+const validAdress = function(inputName) {
+    
+    //création de la regex pour la validation d'adresse
+    const adressFormat = /^[0-9]+,* *[a-zA-Z][^0-9]*$/;
+    if (inputName.value.match(adressFormat)) {
+        inputName.nextElementSibling.innerText = "";
+        return true;
+    } else {
+        alert("Votre adresse n'est pas valide, veuillez indiquez le numero de la voie");
+        return false;
+    }
+}
+
+// validation de l'email ( oblige l'utilisateur a entrée une valeur de type exemple@domain.com )
+const validEmail = function (inputName) {
+    //création de la regex pour la validation d'email
+    const emailFormat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    if (inputName.value.match(emailFormat)) {
+        inputName.nextElementSibling.innerText = "";
+        return true;
+    } else {
+        alert ("Votre adresse mail n'est pas valide, ex: exemple@domain.com");
+        return false;
+    }
+}
+
+// request data en transmettant l'objet avec les données de contact et l'identifiant du produit
+// redirection vers la page de confirmation
+// on nettoie le localStorage après avoir passer la commande
+const postInformationToApiAndShowOrderNumber = function(requestedData){
+    fetch(`${API_ROOT}/products/order`, {
+        method: 'POST',
+        body: JSON.stringify(requestedData),
+        headers: {"Content-type": "application/json; charset=UTF-8"}
+    })
+    .then(response => response.json())
+    .then(json => {
+                redirectionToConfirmationPage(json.orderId);
+                localStorage.clear();
+            })
+} 
+
+// redirect to confirmation page with id passed in parametres of function
+function redirectionToConfirmationPage(url) {
+    document.location.href = `confirmation.html?id=${url}`;
+}

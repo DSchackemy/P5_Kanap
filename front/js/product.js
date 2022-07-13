@@ -90,7 +90,7 @@ function addEventListenerOnAddToCartBtn() {
 function isItemValid(item) {
     const selectBox = document.getElementById('colors');
 
-return selectBox.selectedIndex != 0 && Number.isInteger(item.quantity) && item.quantity > 0 && item.quantity < 101;
+return selectBox.selectedIex != 0 && Number.isInteger(item.quantity) && item.quantity > 0 && item.quantity < 101;
 }
 
 // function qui ajoute l'objet au panier

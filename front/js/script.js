@@ -1,4 +1,4 @@
-//fetch les données en provenance du serveur et appeler addProducts//
+//fetch les données en provenance du serveur et appele addProducts//
 
 fetch("http://localhost:3000/api/products")
     .then((res) => res.json())
@@ -44,7 +44,7 @@ function createAnchor(id){
     return anchor
 }
 
-//appendChildren va chercher l'id items et si le resultat est different de null il applique sur anchor//
+//appendChild va chercher l'id items et si le resultat est different de null il applique sur anchor//
 function appendArticleToAnchor(anchor, article) {
     const items = document.querySelector("#items")
     if (items != null) {
